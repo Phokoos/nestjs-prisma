@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "title": "Movie 1",
+    "director": "Director 1",
+    "genre": "horror",
+    "year": 2000
+  },
+  {
+    "id": 2,
+    "title": "Movie 2",
+    "director": "Director 2",
+    "genre": "comedy",
+    "year": 2001
+  },
+  {
+    "id": 3,
+    "title": "Movie 3",
+    "director": "Director 3",
+    "genre": "comedy",
+    "year": 2002
+  },
+  {
+    "id": 4,
+    "title": "Movie 4",
+    "director": "Director 4",
+    "genre": "horror",
+    "year": 2003
+  },
+  {
+    "id": 5,
+    "title": "Movie 5",
+    "director": "Director 5",
+    "genre": "horror",
+    "year": 2004
+  },
+  {
+    "id": 6,
+    "title": "New Movie",
+    "director": "New Director",
+    "year": 2020
+  },
+  {
+    "id": 7,
+    "title": "New Movie",
+    "director": "New Director",
+    "genre": "horror",
+    "year": 2020
+  }
+]
