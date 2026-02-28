@@ -1,0 +1,83 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+
+  title       String  @db.VarChar(128)
+  description String? @db.VarChar(512)
+
+  price    Float @default(0.0)
+  discount Int   @db.SmallInt @default(0)
+
+  isActive Boolean        @default(true) @map("is_active")
+  country  ProductCountry @default(UKRAINE)
+
+  posterId Int?           @unique @map("poster_id")
+  poster   ProductPoster? @relation(fields: [posterId], references: [id])
+
+  reviews   Review[]   @relation("ProductReviews")
+  customers Customer[] @relation("products_customers")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([title])
+  @@map("products")
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+
+  text   String @db.VarChar(512)
+  rating Int    @db.SmallInt
+
+  product   Product @relation("ProductReviews", fields: [productId], references: [id], onDelete: Cascade)
+  productId Int     @map("product_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("reviews")
+}
+
+model Customer {
+  id Int @id @default(autoincrement())
+
+  name     String    @db.VarChar(50)
+  products Product[] @relation("products_customers")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model ProductPoster {
+  id Int @id @default(autoincrement())
+
+  url String
+
+  product Product? @relation()
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("product_posters")
+}
+
+enum ProductCountry {
+  UKRAINE
+  USA
+  GERMANY
+  FRANCE
+
+  @@map("product_country")
+}

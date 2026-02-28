@@ -1,23 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CustomerEntity } from './entities/customer.entity';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { Repository } from 'typeorm';
+import { Customer } from '../../generated/prisma/client';
 
 @Injectable()
 export class CustomerService {
-  public constructor(
-    @InjectRepository(CustomerEntity)
-    private readonly customerRepo: Repository<CustomerEntity>,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
-  public async create(dto: CreateCustomerDto): Promise<CustomerEntity> {
+  public async create(dto: CreateCustomerDto): Promise<Customer> {
     const { name } = dto;
 
-    const customer = this.customerRepo.create({
-      name,
+    return this.prismaService.customer.create({
+      data: { name },
     });
-
-    return this.customerRepo.save(customer);
   }
 }

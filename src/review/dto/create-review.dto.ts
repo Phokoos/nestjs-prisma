@@ -9,6 +9,7 @@ export class CreateReviewDto {
   @Max(10)
   rating: number;
 
-  @IsUUID()
-  productId: string;
+  @IsNumber()
+  @IsNotEmpty()
+  productId: number;
 }

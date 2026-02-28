@@ -4,28 +4,25 @@ import { AppService } from './app.service';
 import { TaskModule } from './task/task.module';
 import { MovieModule } from './movie/movie.module';
 import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getTypeOrmConfig } from './config/typeorm.config';
+import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from './product/product.module';
 import { ReviewModule } from './review/review.module';
 import { CustomerModule } from './customer/customer.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: getTypeOrmConfig,
-    }),
+    PrismaModule,
     TaskModule,
     MovieModule,
     UserModule,
     ProductModule,
     ReviewModule,
     CustomerModule,
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

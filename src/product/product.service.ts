@@ -1,91 +1,99 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ProductEntity } from './entities/product.entity';
-import { In, Repository } from 'typeorm';
+import { PrismaService } from '../prisma/prisma.service';
+import { Product } from '../../generated/prisma/client';
 import { CreateProductDto } from './dto/create-product.dto';
-import { CustomerEntity } from '../customer/entities/customer.entity';
-import { ProductPosterEntity } from './dto/poster.entity';
 
 @Injectable()
 export class ProductService {
-  public constructor(
-    @InjectRepository(ProductEntity)
-    private readonly movieRepo: Repository<ProductEntity>,
-    @InjectRepository(ProductPosterEntity)
-    private readonly productPosterRepo: Repository<ProductPosterEntity>,
-    @InjectRepository(CustomerEntity)
-    private readonly customerRepo: Repository<CustomerEntity>,
-  ) {}
+  public constructor(private readonly prismaService: PrismaService) {}
 
-  public async findAll(): Promise<ProductEntity[]> {
-    return await this.movieRepo.find({
-      order: {
-        createdAt: 'DESC',
+  public async findAll(): Promise<Product[]> {
+    return this.prismaService.product.findMany({
+      where: {
+        isActive: true,
       },
-      relations: ['customers', 'poster'],
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        customers: true,
+        reviews: true,
+      },
     });
   }
 
-  public async findById(id: string): Promise<ProductEntity> {
-    const product = await this.movieRepo.findOne({
+  public async findById(id: number, isAll: boolean = false): Promise<Product> {
+    const product = await this.prismaService.product.findFirst({
       where: {
         id,
       },
-      relations: ['customers', 'poster'],
+      include: {
+        customers: true,
+        poster: true,
+        reviews: true,
+      },
     });
 
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product || (!product.isActive && !isAll))
+      throw new NotFoundException('Product not found');
 
     return product;
   }
 
-  public async create(dto: CreateProductDto): Promise<ProductEntity> {
-    const { title, price, manufacturer, discount, customerIds, posterUrl } =
-      dto;
+  public async create(dto: CreateProductDto): Promise<Product> {
+    const { title, price, discount, customerIds, posterUrl } = dto;
 
-    const customers = await this.customerRepo.find({
+    const customers = await this.prismaService.customer.findMany({
       where: {
-        id: In(customerIds),
+        id: {
+          in: customerIds,
+        },
       },
     });
 
-    if (!customers || !customers.length)
-      throw new NotFoundException('Customer not found');
+    if (!customers.length) throw new NotFoundException('Customer not found');
 
-    let poster: ProductPosterEntity | null = null;
+    return this.prismaService.product.create({
+      data: {
+        title,
+        price,
+        discount,
+        ...(posterUrl && {
+          poster: {
+            create: {
+              url: posterUrl,
+            },
+          },
+        }),
+        customers: {
+          connect: customers.map((customer) => ({ id: customer.id })),
+        },
+      },
+    });
+  }
 
-    if (posterUrl) {
-      poster = this.productPosterRepo.create({
-        url: posterUrl,
-      });
-      await this.productPosterRepo.save(poster);
-    }
+  public async update(id: number, dto: CreateProductDto): Promise<Product> {
+    const product = await this.findById(id, true);
 
-    const product = this.movieRepo.create({
-      title,
-      price,
-      poster,
-      manufacturer,
-      discount,
-      customers,
+    return this.prismaService.product.update({
+      where: { id: product.id },
+      data: {
+        ...dto,
+      },
+    });
+  }
+
+  public async delete(id: number): Promise<object> {
+    const product = await this.findById(id, true);
+    await this.prismaService.product.delete({
+      where: {
+        id: product.id,
+      },
     });
 
-    return await this.movieRepo.save(product);
-  }
-
-  public async update(
-    id: string,
-    dto: CreateProductDto,
-  ): Promise<ProductEntity> {
-    const product = await this.findById(id);
-    return await this.movieRepo.save({ ...product, ...dto });
-  }
-
-  public async delete(id: string): Promise<object> {
-    const product = await this.findById(id);
-    await this.movieRepo.remove(product);
     return {
-      status: true,
+      status: 'success',
+      message: 'product deleted',
     };
   }
 }

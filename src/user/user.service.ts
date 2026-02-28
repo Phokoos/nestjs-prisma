@@ -26,7 +26,7 @@ export class UserService {
     },
   ];
 
-  public async getAll(): Promise<User[]> {
+  public getAll(): User[] {
     return this.users;
   }
 }

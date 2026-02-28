@@ -1,17 +1,16 @@
 import {
   IsArray,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Max,
   MaxLength,
   Min,
 } from 'class-validator';
-import { Manufacturer } from '../entities/product.entity';
+import { Type } from 'class-transformer';
+import { Optional } from '@nestjs/common';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -27,6 +26,9 @@ export class CreateProductDto {
   @Max(100)
   price: number;
 
+  @Optional()
+  isActive: boolean;
+
   @IsNumber()
   @Min(0)
   @Max(20)
@@ -34,15 +36,13 @@ export class CreateProductDto {
   @IsOptional()
   discount: number;
 
-  @IsOptional()
-  @IsEnum(Manufacturer)
-  manufacturer: Manufacturer;
-
   @IsString()
+  @IsOptional()
   posterUrl: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsArray()
-  @IsUUID(4, { each: true })
-  customerIds: string[];
+  @IsInt({ each: true })
+  @Type(() => Number)
+  customerIds: number[];
 }

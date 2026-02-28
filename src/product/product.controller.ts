@@ -20,7 +20,7 @@ export class ProductController {
   }
 
   @Get(':id')
-  findById(@Param('id') id: string): Promise<any> {
+  findById(@Param('id') id: number): Promise<any> {
     return this.productService.findById(id);
   }
 
@@ -31,14 +31,14 @@ export class ProductController {
 
   @Put(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: CreateProductDto,
   ): Promise<any> {
     return this.productService.update(id, dto);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<any> {
+  async delete(@Param('id') id: number): Promise<any> {
     return this.productService.delete(id);
   }
 }
