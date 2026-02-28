@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TaskModule } from './task/task.module';
@@ -9,17 +9,18 @@ import { ProductModule } from './product/product.module';
 import { ReviewModule } from './review/review.module';
 import { CustomerModule } from './customer/customer.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { LoggingMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ProductModule,
     PrismaModule,
     TaskModule,
     MovieModule,
     UserModule,
-    ProductModule,
     ReviewModule,
     CustomerModule,
     PrismaModule,
@@ -27,4 +28,8 @@ import { PrismaModule } from './prisma/prisma.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}
